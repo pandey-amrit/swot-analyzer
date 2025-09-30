@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://subconcious-ai.vercel.app/sitemap.xml
