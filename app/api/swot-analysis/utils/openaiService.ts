@@ -1,17 +1,25 @@
 import OpenAI from "openai"
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY
-if (!OPENAI_API_KEY) {
-  throw new Error("OPENAI_API_KEY environment variable is not set")
-}
-
 export const MODEL = "gpt-3.5-turbo"
 
-const openai = new OpenAI({
-  apiKey: OPENAI_API_KEY,
-  maxRetries: 2,
-  timeout: 20000,
-})
+let openai: OpenAI | null = null
+
+function getOpenAIClient(): OpenAI {
+  if (!openai) {
+    const OPENAI_API_KEY = process.env.OPENAI_API_KEY
+    if (!OPENAI_API_KEY) {
+      throw new Error("OPENAI_API_KEY environment variable is not set")
+    }
+    
+    openai = new OpenAI({
+      apiKey: OPENAI_API_KEY,
+      maxRetries: 2,
+      timeout: 20000,
+    })
+  }
+  
+  return openai
+}
 
 export interface GenerateTextOptions {
   model: string
@@ -35,7 +43,9 @@ export async function generateText({
   temperature = 0.5,
   maxOutputTokens = 700,
 }: GenerateTextOptions): Promise<GenerateTextResult> {
-  const response = await openai.chat.completions.create({
+  const client = getOpenAIClient()
+  
+  const response = await client.chat.completions.create({
     model,
     messages: [{ role: "user", content: prompt }],
     temperature,
